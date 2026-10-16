@@ -16,7 +16,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { loadConfig, redact } from './config.mjs'
-import { createDaytonaAdapter } from './daytona.mjs'
+import { createDaytonaAdapter, purgeOrphanSandboxes } from './daytona.mjs'
 import { createSponsors } from './sponsors.mjs'
 import { createAws } from './aws.mjs'
 import { listTargets, createRepoTarget, defaultRepoPath } from './targets.mjs'
@@ -517,4 +517,8 @@ const server = createServer(async (req, res) => {
 server.listen(port, () => {
   console.log(`Pentest orchestrator listening on http://127.0.0.1:${port}`)
   console.log(`Target default: ${process.env.TARGET_APP || 'juice-shop'} · credentials for: ${Object.entries({ daytona: config.DAYTONA_API_KEY, anchor: config.ANCHOR_API_KEY, arize: config.ARIZE_API_KEY, surrealdb: config.SURREAL_MEMORY_API_KEY, bedrock: config.AWS_ACCESS_KEY_ID }).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none'}`)
+  // The run map is in-memory, so any sandbox from a previous session is orphaned and eats the disk quota.
+  purgeOrphanSandboxes({ onLog: recordLog })
+    .then(({ deleted }) => { if (deleted) recordLog({ role: 'system', text: `Freed ${deleted} orphaned sandbox(es) from a previous session`, tone: 'muted' }) })
+    .catch(() => {})
 })

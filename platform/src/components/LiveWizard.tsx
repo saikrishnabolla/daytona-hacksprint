@@ -68,33 +68,59 @@ export default function LiveWizard({ onToast }: Props) {
   const pickedInit = useRef(false)
   const restored = useRef(false)
   const logBox = useRef<HTMLDivElement>(null)
+  const savedRef = useRef<{ read?: boolean; value?: { step?: number; sessionIds?: string[]; sources?: Source[]; picked?: string[] } | null }>({})
+  if (!savedRef.current.read) {
+    savedRef.current.read = true
+    try { savedRef.current.value = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null') } catch { savedRef.current.value = null }
+  }
 
-  // Restore an in-flight wizard after a reload (tab switches keep the component mounted).
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null')
-      if (saved && Array.isArray(saved.sessionIds) && saved.sessionIds.length) {
-        restored.current = true
-        setSessionIds(saved.sessionIds)
-        setStep(saved.step || 0)
-        if (Array.isArray(saved.sources)) setSources(saved.sources)
-        if (Array.isArray(saved.picked)) setPicked(saved.picked)
-      }
-    } catch { /* ignore */ }
-  }, [])
-
+  // Persist progress so a reload resumes the same step (tab switches keep the component mounted).
   useEffect(() => {
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ step, sessionIds, sources, picked })) } catch { /* ignore */ }
   }, [step, sessionIds, sources, picked])
 
   useEffect(() => {
+    // Only resume a saved session that the server still knows about.
+    const saved = savedRef.current.value
+    const resumable = Boolean(saved?.sessionIds?.length)
     api.targets().then(({ targets, default: fallback, demoRepoPath }) => {
       setTargets(targets)
       setRepoPath(demoRepoPath)
-      if (demoRepoPath && !restored.current) { setSources([{ key: 'acme/notes-api', label: 'acme/notes-api', path: demoRepoPath }]) }
+      if (demoRepoPath && !resumable) { setSources([{ key: 'acme/notes-api', label: 'acme/notes-api', path: demoRepoPath }]) }
     }).catch(() => {})
     api.health().then(result => setConfigured(result.configured)).catch(() => {})
-    api.runs().then(result => setRuns(result.runs)).catch(() => {})
+    api.runs().then(result => {
+      setRuns(result.runs)
+      if (resumable && saved) {
+        const known = new Set(result.runs.map(run => run.runId))
+        if (saved.sessionIds!.some(id => known.has(id))) {
+          restored.current = true
+          setSessionIds(saved.sessionIds!)
+          setStep(saved.step || 0)
+          if (Array.isArray(saved.sources)) setSources(saved.sources)
+          if (Array.isArray(saved.picked)) setPicked(saved.picked)
+          return
+        }
+      }
+      // Nothing to resume: open on the most recent run so the workspace shows real results.
+      const groups = new Map<string, RunSummary[]>()
+      for (const run of result.runs) {
+        if (run.status === 'cleaned') continue
+        const key = run.runId.replace(/-\d+$/, '')
+        groups.set(key, [...(groups.get(key) || []), run])
+      }
+      let newest: RunSummary[] = []
+      for (const list of groups.values()) {
+        const stamp = list.map(run => run.startedAt || '').sort().pop() || ''
+        const best = newest.map(run => run.startedAt || '').sort().pop() || ''
+        if (!newest.length || stamp > best) newest = list
+      }
+      if (newest.length) {
+        restored.current = true
+        setSessionIds(newest.map(run => run.runId))
+        setStep(newest.some(run => run.status === 'retested') ? 4 : newest.some(run => run.findings?.length) ? 2 : 1)
+      }
+    }).catch(() => {})
     const stopLogs = openLogStream(line => setLogs(current => [...current.slice(-250), line]))
     return () => { stopLogs() }
   }, [])

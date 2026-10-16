@@ -196,3 +196,20 @@ export function createDaytonaAdapter({ onLog = () => {}, apiKey = process.env.DA
   }
   return { provision, scan, getTarget, getState: describe, getScope, getLogs, refreshLogs, log, applyFix, cleanup, getSandboxes: () => ({ worker }) }
 }
+
+/**
+ * Delete sandboxes left behind by previous runs. The in-memory run map does not survive a
+ * restart, so those sandboxes are unreachable and consume the org's disk quota.
+ */
+export async function purgeOrphanSandboxes({ onLog = () => {}, apiKey = process.env.DAYTONA_API_KEY, apiUrl = process.env.DAYTONA_API_URL, target: region = process.env.DAYTONA_TARGET, client } = {}) {
+  if (!apiKey && !client) return { deleted: 0, skipped: true }
+  const daytona = client || new Daytona({ apiKey, ...(apiUrl ? { apiUrl } : {}), ...(region ? { target: region } : {}) })
+  let deleted = 0
+  try {
+    for await (const sandbox of daytona.list({ labels: { project: 'daytona-hacksprint' } })) {
+      try { await daytona.delete(sandbox); deleted += 1; onLog({ role: 'system', text: `Removed orphaned sandbox ${sandbox.id}`, tone: 'muted' }) }
+      catch { /* leave it; it may be mid-teardown */ }
+    }
+  } catch { /* listing failed; nothing to do */ }
+  return { deleted }
+}

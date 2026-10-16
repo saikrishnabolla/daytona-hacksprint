@@ -15,11 +15,6 @@
 .connected-row{display:inline-flex;align-items:center;gap:7px;font-size:var(--text-caption);color:#218462;white-space:nowrap}
 .integration-row .button svg:last-child{color:#9aa0b5}
 
-.memory-fields{display:flex;flex-wrap:wrap;gap:6px 20px;margin:8px 0 10px}
-.memory-field{display:flex;gap:6px;font-size:var(--text-caption);color:#9095a9}
-.memory-field dt{margin:0}
-.memory-field dd{margin:0;color:#3c4257}
-
 .pages-proof{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .pages-proof figure{margin:0;flex:1 1 280px;min-width:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#f6f7fb}
 .pages-proof img{display:block;width:100%;height:auto}

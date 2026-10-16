@@ -51,12 +51,26 @@ export function FindingsPage() {
     return () => stop()
   }, [])
 
-  const all: FindingWithProof[] = runs.flatMap(run => run.findings.map(finding => ({
-    ...finding,
-    // Only the finding Anchor actually replayed in a browser has captured frames.
-    proof: finding.status === 'Confirmed' ? run.proofs?.verify || null : null,
-    retestProof: finding.status === 'Confirmed' ? run.proofs?.retest || null : null,
-  })))
+  // The same issue appears in every sandbox; collapse by rule + endpoint.
+  const seen = new Map<string, FindingWithProof & { runs: number }>()
+  for (const run of runs) for (const finding of run.findings) {
+    const key = `${finding.pluginId}::${finding.endpoint}`
+    const verified = finding.status === 'Confirmed'
+    const existing = seen.get(key)
+    if (existing) {
+      existing.runs += 1
+      if (verified) { existing.status = 'Confirmed'; existing.proof = run.proofs?.verify || null; existing.retestProof = run.proofs?.retest || null }
+      continue
+    }
+    seen.set(key, {
+      ...finding,
+      runs: 1,
+      // Only the finding Anchor actually replayed in a browser has captured frames.
+      proof: verified ? run.proofs?.verify || null : null,
+      retestProof: verified ? run.proofs?.retest || null : null,
+    })
+  }
+  const all = [...seen.values()]
   const filtered = all.filter(finding =>
     `${finding.title} ${finding.endpoint}`.toLowerCase().includes(query.toLowerCase())
     && (filter === 'All' || finding.status === filter))
@@ -72,9 +86,9 @@ export function FindingsPage() {
       <table className="data-table full-table">
         <thead><tr><th className="type-col" /><th>Issue</th><th>Severity</th><th>Endpoint</th><th>Status</th><th /></tr></thead>
         <tbody>
-          {filtered.map((finding, index) => <tr key={`${finding.id}-${index}`}>
+          {filtered.map(finding => <tr key={`${finding.pluginId}-${finding.endpoint}`}>
             <td><Bug size={17} /></td>
-            <td><button className="finding-name" onClick={() => setDetail(finding)}>{finding.title}</button><span className="table-subtext">{finding.pluginId}</span></td>
+            <td><button className="finding-name" onClick={() => setDetail(finding)}>{finding.title}</button><span className="table-subtext">{finding.pluginId}{finding.runs > 1 ? ` · ${finding.runs} sandboxes` : ''}</span></td>
             <td><span className={`severity ${finding.severity.toLowerCase()}`}><WarningCircle size={13} />{finding.severity}</span></td>
             <td><code>{finding.endpoint}</code></td>
             <td><span className={`verification-label ${finding.status === 'Confirmed' ? 'confirmed' : ''}`}>{finding.status === 'Confirmed' ? <CheckCircle size={13} weight="fill" /> : null}{finding.status}</span></td>

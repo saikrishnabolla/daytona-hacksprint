@@ -27,9 +27,8 @@ if (await repo.count()) { await repo.click().catch(() => {}); await page.waitFor
 
 await shot('/findings', 'new-issues')
 
-// Open a confirmed issue (the one with captured Anchor frames) and screenshot the dialog.
-const confirmedRow = page.locator('tr', { has: page.locator('.lr-finding-state.confirmed') }).first()
-const target = (await confirmedRow.count()) ? confirmedRow.locator('.finding-name').first() : page.locator('.finding-name').first()
+// Open the confirmed XSS issue (the one with captured Anchor frames) and screenshot the dialog.
+const target = page.getByRole('button', { name: /Cross Site Scripting/i }).first()
 if (await target.count()) {
   await target.click().catch(() => {})
   await page.waitForTimeout(1400)
