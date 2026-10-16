@@ -1,0 +1,15 @@
+/* Shared by the workspace and embedded sample application. */
+:root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-caption: 12px;
+  --text-label: 13px;
+  --text-body: 14px;
+  --text-section: 16px;
+  --text-title: 20px;
+  --text-page: 28px;
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}

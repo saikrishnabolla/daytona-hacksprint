@@ -1,0 +1,24 @@
+:root {
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mobile-prototype {
+  width: min(100vw, 390px);
+  height: min(100dvh, 844px);
+  margin-inline: auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-badge.live-badge{display:inline-flex;align-items:center;gap:5px;background:#edf8f3;border-color:#d4ecdf;color:#218462}
+.preview-badge.live-badge svg{color:#25b58b}

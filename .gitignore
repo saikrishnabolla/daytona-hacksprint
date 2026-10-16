@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+dist/
+.env*
+!.env.example
+!.env.server.example
+__pycache__/
+*.pyc
+design/
+platform/qa/

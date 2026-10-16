@@ -1,0 +1,34 @@
+/* Live-data pages: issues, memory, integrations, runs, request log. */
+
+.pages-detail{width:min(720px,calc(100vw - 32px))}
+.pages-detail-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pages-detail-meta code{font-size:var(--text-caption);color:#6b7290}
+.pages-detail-block{margin-top:16px}
+.pages-detail-block h3{font-size:var(--text-label);font-weight:600;margin:0 0 7px;color:#4b5069}
+.pages-detail-text{font-size:var(--text-label);line-height:1.7;color:#6a7085;margin:0 0 8px}
+.pages-trace{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.pages-trace li{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--border);border-radius:5px;background:#fafbfd}
+.pages-trace li strong{font-size:var(--text-label);font-weight:600;color:#3c4257}
+.pages-trace li span{font-size:var(--text-caption);color:#7a8095}
+.pages-trace li.pending{opacity:.75}
+
+.connected-row{display:inline-flex;align-items:center;gap:7px;font-size:var(--text-caption);color:#218462;white-space:nowrap}
+.integration-row .button svg:last-child{color:#9aa0b5}
+
+.memory-fields{display:flex;flex-wrap:wrap;gap:6px 20px;margin:8px 0 10px}
+.memory-field{display:flex;gap:6px;font-size:var(--text-caption);color:#9095a9}
+.memory-field dt{margin:0}
+.memory-field dd{margin:0;color:#3c4257}
+
+.pages-proof{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.pages-proof figure{margin:0;flex:1 1 280px;min-width:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#f6f7fb}
+.pages-proof img{display:block;width:100%;height:auto}
+.pages-proof figcaption{font-size:var(--text-caption);color:#7a8095;padding:7px 11px;border-top:1px solid var(--border);background:#fff}
+
+.data-table td code{display:inline-block;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+
+.memory-table td{vertical-align:middle}
+.memory-title{display:block;font-weight:500;color:#2a2d40}
+.memory-endpoint{display:block;font-size:var(--text-caption);color:#9095a9;margin-top:2px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.memory-when{color:#6a7085;font-size:var(--text-caption);white-space:nowrap}
+.memory-id{font-size:var(--text-caption);color:#8b8fa4}
